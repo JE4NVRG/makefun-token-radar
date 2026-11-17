@@ -151,7 +151,7 @@ const money = (n: number): string => {
  * The steps to farm the protocol before or after it issues a token. Concrete: what to do, on which
  * chain, roughly what it costs and how long it takes. Built from the snapshot's own figures.
  */
-function farmSteps(p: Protocol, age: number, multiple: number): string[] {
+function farmSteps(p: Protocol, age: number, multiple: number, floor: number): string[] {
   const chain = p.chains[0] ?? 'its main chain';
   const tvl = money(p.tvl_usd);
   const depth = `${Math.round(Math.max(3, Math.min(45, Math.sqrt(p.tvl_usd / 1e6) * 0.6)))} minutes`;
@@ -172,9 +172,19 @@ function farmSteps(p: Protocol, age: number, multiple: number): string[] {
     );
   }
 
+  if (p.change_7d !== null && p.change_7d <= -25) {
+    steps.splice(2, 0, `TVL fell ${Math.abs(p.change_7d).toFixed(1)}% in seven days, so capital is leaving: farm a third of the intended size now and add the rest once the outflow stops, because a protocol still bleeding deposits usually cuts its incentive budget next.`);
+  }
+
   if (p.chains.length > 1) {
     steps.push(
       `${p.name} runs on ${p.chains.length} chains (${p.chains.slice(0, 4).join(', ')}): farm the chain where ${p.name}'s TVL is thinnest, since points per dollar are usually best where the protocol is least crowded.`,
+    );
+  }
+
+  if (p.tvl_usd < floor) {
+    steps.push(
+      `This protocol sits below the house floor of ${money(floor)} at ${tvl}: the radar ranks it because a small protocol can still issue a token, but size the position for thinner liquidity and expect more slippage on the way out.`,
     );
   }
 
@@ -224,7 +234,7 @@ export function buildRadar(snapshot: Snapshot): Radar {
       name: p.name,
       rank: 0,
       implied_value_usd: usd,
-      farm_steps: farmSteps(p, age, multiple),
+      farm_steps: farmSteps(p, age, multiple, snapshot.floor_usd),
       category: p.category,
       chains: p.chains,
       tvl_usd: p.tvl_usd,
