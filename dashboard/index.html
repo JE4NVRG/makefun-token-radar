@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Token Launch Radar</title>
+    <link rel="stylesheet" href="app.css" />
+  </head>
+  <body>
+    <header class="masthead">
+      <div class="brand">
+        <span class="mark" aria-hidden="true"></span>
+        <div>
+          <h1>Token Launch Radar</h1>
+          <p class="tagline">Protocols that record no token, ranked by the value a token would imply today.</p>
+        </div>
+      </div>
+      <dl class="facts" id="facts">
+        <div><dt>Snapshot</dt><dd id="fact-date">—</dd></div>
+        <div><dt>Ranked</dt><dd id="fact-rows">—</dd></div>
+        <div><dt>Watchlist</dt><dd id="fact-watch">—</dd></div>
+        <div><dt>Already trading</dt><dd id="fact-live">—</dd></div>
+      </dl>
+    </header>
+
+    <section class="controls" aria-label="Filters">
+      <label class="search">
+        <span>Search</span>
+        <input id="q" type="search" placeholder="protocol, category or chain" autocomplete="off" />
+      </label>
+      <label>
+        <span>Category</span>
+        <select id="category"><option value="">all</option></select>
+      </label>
+      <label>
+        <span>Chain</span>
+        <select id="chain"><option value="">all</option></select>
+      </label>
+      <label class="check">
+        <input id="watch-only" type="checkbox" />
+        <span>Watchlist only</span>
+      </label>
+      <label class="check">
+        <input id="min-floor" type="checkbox" />
+        <span>At or above the $50M floor</span>
+      </label>
+      <p class="count" id="count">—</p>
+    </section>
+
+    <main class="layout">
+      <div class="board-wrap">
+        <table class="board" id="board">
+          <thead>
+            <tr>
+              <th class="num" data-sort="rank" scope="col">#</th>
+              <th data-sort="name" scope="col">Protocol</th>
+              <th data-sort="category" scope="col">Category</th>
+              <th data-sort="chains" scope="col">Chains</th>
+              <th class="num" data-sort="tvl" scope="col">TVL</th>
+              <th class="num" data-sort="change7d" scope="col">7d</th>
+              <th class="num" data-sort="implied" scope="col">Implied value</th>
+              <th class="num" data-sort="multiple" scope="col">×TVL</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+
+      <aside class="detail" id="detail" aria-live="polite">
+        <p class="empty">Pick a protocol to read its plan.</p>
+      </aside>
+    </main>
+
+    <section class="method">
+      <h2>How the implied value is built</h2>
+      <p>
+        Every figure below comes from the sealed snapshot and nothing else. No name, no ranking and no
+        outside price enters the number.
+      </p>
+      <pre class="formula">implied = TVL × category ratio × growth adjustment × age adjustment</pre>
+      <div class="method-grid">
+        <div>
+          <h3>Category ratio</h3>
+          <p>A prior FDV/TVL multiple for the line of business, stated as an assumption:</p>
+          <ul id="ratios"></ul>
+        </div>
+        <div>
+          <h3>Growth adjustment</h3>
+          <p>
+            1 + 0.6 × clamp(7-day TVL change ÷ 100, −0.5, 1.2). A protocol that lost half its TVL in a
+            week is discounted, not deleted; one that tripled is capped at 1.72×. A protocol whose
+            seven-day change is unreported keeps 1.00×.
+          </p>
+          <h3>Age adjustment</h3>
+          <p>
+            0.85× on the day DefiLlama starts tracking a protocol, rising to 1.15× at five years. A
+            protocol that has run this long with no token has already had every chance to launch, so
+            its record is worth more than a month-old protocol's untested TVL.
+          </p>
+        </div>
+      </div>
+      <p class="caveat">
+        The implied value is this radar's own claim about a hypothetical token. It does not say a token
+        will be issued, and it is not a price forecast. Protocols whose products wrap a token that
+        already trades, and those that record one, are set aside rather than ranked.
+      </p>
+    </section>
+
+    <script src="../data.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
